@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitDiagram - Simple</title>
+    <!-- Tailwind CSS for quick styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <!-- Mermaid JS -->
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <!-- SVG Pan Zoom -->
+    <script src="https://cdn.jsdelivr.net/npm/svg-pan-zoom@3.6.1/dist/svg-pan-zoom.min.js"></script>
+</head>
+
+<body class="bg-gray-50 min-h-screen flex flex-col">
+
+    <header class="bg-white shadow p-4">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-xl font-bold text-gray-800">GitDiagram <span
+                    class="text-sm font-normal text-gray-500">Simple Mode</span></h1>
+        </div>
+    </header>
+
+    <main class="container mx-auto p-4 flex-grow flex flex-col items-center">
+
+        <div class="bg-white p-6 rounded-lg shadow-md w-full max-w-2xl mb-8">
+            <div class="flex flex-col gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">GitHub Repository URL</label>
+                    <input type="text" id="repoUrl" placeholder="https://github.com/username/repo"
+                        class="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                        GitHub PAT <span class="text-gray-400 font-normal">(Optional, for private repos)</span>
+                    </label>
+                    <input type="password" id="githubPat" placeholder="ghp_..."
+                        class="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Diagram Type</label>
+                    <select id="diagramType"
+                        class="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                        <option value="flowchart" selected>Flowchart Diagram (Default)</option>
+                        <option value="class">Class Diagram (OOP)</option>
+                        <option value="state">State Diagram</option>
+                        <option value="c4">C4 Component Diagram</option>
+                    </select>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <button id="generateBtn"
+                        class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 transition-colors font-medium">
+                        Generate Diagram
+                    </button>
+                    <button id="regenerateBtn" style="display:none;"
+                        class="bg-gray-200 text-gray-800 px-4 py-2 rounded hover:bg-gray-300 transition-colors">
+                        Force Refresh
+                    </button>
+                </div>
+            </div>
+            <div id="errorMsg" class="hidden mt-4 text-red-600 text-sm bg-red-50 p-2 rounded"></div>
+        </div>
+
+        <div id="loading" class="hidden flex flex-col items-center justify-center py-12">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+            <p class="mt-4 text-gray-600">Analyzing repository... this may take a minute.</p>
+        </div>
+
+        <div id="diagramContainer" class="hidden w-full max-w-6xl bg-white p-4 rounded-lg shadow-lg overflow-auto">
+            <div class="mermaid">
+                <!-- Diagram will be injected here -->
+            </div>
+            <!-- Export Buttons -->
+            <div id="exportButtons" class="hidden mt-4 flex gap-2 justify-center border-t pt-4">
+                <button id="exportSvgBtn"
+                    class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition-colors flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    </svg>
+                    Export SVG (Vector)
+                </button>
+                <button id="exportPngBtn"
+                    class="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 transition-colors flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    </svg>
+                    Export PNG (High-Res)
+                </button>
+                <button id="exportDrawioBtn"
+                    class="bg-orange-600 text-white px-4 py-2 rounded hover:bg-orange-700 transition-colors flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    Export Mermaid (.mmd)
+                </button>
+            </div>
+        </div>
+
+    </main>
+
+    <footer class="bg-gray-100 p-4 text-center text-gray-500 text-sm">
+        GitDiagram - Local Mode
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+
+</html>
